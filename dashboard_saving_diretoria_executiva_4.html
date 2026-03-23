@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard Saving — Diretoria Executiva 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f5f5f4;--bg3:#eeede8;
+  --text:#1a1a18;--text-sec:#6b6b67;
+  --border:rgba(0,0,0,0.10);--border-l:rgba(0,0,0,0.06);
+  --blue:#185FA5;--blue-l:#E6F1FB;
+  --green:#1D9E75;--green-l:#EAF3DE;--green-dk:#27500A;
+  --red:#E24B4A;--red-l:#FCEBEB;--red-dk:#791F1F;
+  --amber:#BA7517;--amber-l:#FAEEDA;--amber-dk:#633806;
+  --r-md:8px;--r-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.04);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--bg2:#242422;--bg3:#2c2c2a;
+    --text:#f0ede8;--text-sec:#9a9994;
+    --border:rgba(255,255,255,0.12);--border-l:rgba(255,255,255,0.07);
+    --blue-l:#042C53;--green-l:#173404;--red-l:#501313;--amber-l:#412402;
+    --green-dk:#9FE1CB;--red-dk:#F7C1C1;--amber-dk:#FAC775;
+    --shadow:0 1px 4px rgba(0,0,0,0.5);
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg3);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+.page{max-width:1140px;margin:0 auto;padding:2rem 1.5rem;}
+.header{margin-bottom:1.75rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border-l);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.eyebrow{font-size:12px;color:var(--text-sec);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+.title{font-size:24px;font-weight:600;}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.badge{display:inline-flex;align-items:center;font-size:12px;font-weight:500;padding:4px 10px;border-radius:var(--r-md);}
+.b-info{background:var(--blue-l);color:var(--blue);}
+.b-ok{background:var(--green-l);color:var(--green-dk);}
+.b-warn{background:var(--amber-l);color:var(--amber-dk);}
+.b-danger{background:var(--red-l);color:var(--red-dk);}
+.b-neutral{background:var(--bg2);color:var(--text-sec);border:1px solid var(--border);}
+
+.status-hero{display:flex;align-items:center;gap:1.25rem;padding:1.25rem 1.5rem;background:var(--bg);border:1px solid var(--border-l);border-radius:var(--r-lg);margin-bottom:1.5rem;box-shadow:var(--shadow);flex-wrap:wrap;}
+.status-icon{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--green-l);}
+.status-meta{flex:1;min-width:180px;}
+.status-label{font-size:12px;color:var(--text-sec);margin-bottom:2px;}
+.status-value{font-size:20px;font-weight:600;margin-bottom:4px;}
+.status-desc{font-size:13px;color:var(--text-sec);line-height:1.6;}
+.status-right{text-align:right;flex-shrink:0;}
+.crit-title{font-size:12px;color:var(--text-sec);margin-bottom:6px;}
+.crit-row{font-size:13px;font-weight:500;padding:2px 0;color:var(--green);}
+
+.card{background:var(--bg);border:1px solid var(--border-l);border-radius:var(--r-lg);padding:1.25rem 1.5rem;box-shadow:var(--shadow);}
+.sec-label{font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-bottom:1.25rem;}
+.metric{background:var(--bg2);border-radius:var(--r-md);padding:1rem 1.1rem;}
+.m-label{font-size:12px;color:var(--text-sec);margin-bottom:6px;}
+.m-val{font-size:20px;font-weight:600;color:var(--text);}
+.m-sub{font-size:11px;color:var(--text-sec);margin-top:4px;}
+.pos{color:var(--green);}
+.neg{color:var(--red);}
+
+.legend-row{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--text-sec);margin-bottom:12px;align-items:center;}
+.leg-item{display:flex;align-items:center;gap:5px;}
+.leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+.saving-row{display:flex;gap:1.25rem;padding:1rem 0;border-bottom:1px solid var(--border-l);flex-wrap:wrap;}
+.saving-row:last-child{border-bottom:none;}
+.saving-month-label{font-size:14px;font-weight:600;width:30px;flex-shrink:0;padding-top:3px;}
+.saving-body{flex:1;min-width:260px;}
+.saving-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.sk{background:var(--bg2);border-radius:var(--r-md);padding:8px 10px;}
+.sk-label{font-size:11px;color:var(--text-sec);margin-bottom:2px;}
+.sk-val{font-size:14px;font-weight:600;color:var(--text);}
+.saving-bars{display:flex;flex-direction:column;gap:8px;}
+.bar-row{display:flex;align-items:center;gap:8px;}
+.bar-label{font-size:12px;color:var(--text-sec);width:90px;flex-shrink:0;}
+.bar-bg{flex:1;background:var(--bg2);border-radius:99px;height:7px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:99px;}
+.bar-val{font-size:12px;font-weight:600;width:48px;text-align:right;flex-shrink:0;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;font-size:12px;border-collapse:collapse;table-layout:fixed;}
+th{font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.05em;text-align:right;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+th:first-child,th:nth-child(2){text-align:left;}
+td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--border-l);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+td:first-child{text-align:left;color:var(--text-sec);}
+td:nth-child(2){text-align:left;}
+tr:last-child td{border-bottom:none;font-weight:600;background:var(--bg2);color:var(--text);}
+tr:hover td{background:var(--bg2);}
+
+.filter-btn{font-size:12px;padding:4px 12px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg2);color:var(--text-sec);cursor:pointer;font-family:inherit;}
+.filter-btn:hover{background:var(--bg3);}
+.active-btn{background:var(--blue)!important;color:var(--blue-l)!important;border-color:var(--blue)!important;}
+
+.footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border-l);display:flex;justify-content:space-between;font-size:12px;color:var(--text-sec);flex-wrap:wrap;gap:6px;}
+@media(max-width:768px){
+  .grid4{grid-template-columns:repeat(2,1fr);}.grid2{grid-template-columns:1fr;}
+  .saving-kpis{grid-template-columns:repeat(2,1fr);}.status-right{display:none;}
+  .title{font-size:18px;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="eyebrow">Refuturiza · 2026 · Programa de Saving</div>
+    <div class="title">Diretoria Executiva</div>
+    <div class="badges">
+      <span class="badge b-info">Jan–Fev realizados</span>
+      <span class="badge b-ok">Mar–Dez orçados</span>
+      <span class="badge b-ok">Critério: % saving &gt; |Δ receita|</span>
+    </div>
+  </div>
+</div>
+
+<!-- Status hero -->
+<div class="status-hero">
+  <div class="status-icon">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div class="status-meta">
+    <div class="status-label">Status do Programa de Saving</div>
+    <div class="status-value">Habilitada — Janeiro e Fevereiro</div>
+    <div class="status-desc">O percentual economizado no orçamento supera a queda na receita nos dois meses realizados. A área está qualificada para participar do programa de saving.</div>
+  </div>
+  <div class="status-right">
+    <div class="crit-title">Validação do critério</div>
+    <div class="crit-row">Jan: 11.3% saving &gt; 1.1% queda ✓</div>
+    <div class="crit-row">Fev: 19.1% saving &gt; 4.2% queda ✓</div>
+    <div style="margin-top:8px;"><span class="badge b-ok">2/2 meses habilitados</span></div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="sec-label">Indicadores-chave — Acumulado Jan–Fev</div>
+<div class="grid4" style="margin-bottom:1.5rem;">
+  <div class="metric">
+    <div class="m-label">Orçado acumulado</div>
+    <div class="m-val">R$ 234.640,00</div>
+    <div class="m-sub">Jan–Fev orçado</div>
+  </div>
+  <div class="metric">
+    <div class="m-label">Realizado acumulado</div>
+    <div class="m-val">R$ 198.912,20</div>
+    <div class="m-sub">Jan–Fev executado</div>
+  </div>
+  <div class="metric">
+    <div class="m-label">Saving acumulado</div>
+    <div class="m-val pos">R$ 35.727,80</div>
+    <div class="m-sub">15.2% abaixo do orçado</div>
+  </div>
+  <div class="metric">
+    <div class="m-label">Queda na receita</div>
+    <div class="m-val neg">4.2% (Fev)</div>
+    <div class="m-sub">Jan: +1.1% vs orçado</div>
+  </div>
+</div>
+
+<!-- Charts row 1 -->
+<div class="grid2">
+  <div class="card">
+    <div class="sec-label">Despesas: orçado x realizado</div>
+    <div class="legend-row">
+      <span class="leg-item"><span class="leg-sq" style="background:#B5D4F4;"></span>Orçado</span>
+      <span class="leg-item"><span class="leg-sq" style="background:#1D9E75;"></span>Realizado</span>
+    </div>
+    <div style="position:relative;width:100%;height:220px;"><canvas id="chart-despesas"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="sec-label">Receita: orçada x realizada</div>
+    <div class="legend-row">
+      <span class="leg-item"><span class="leg-sq" style="background:#185FA5;"></span>Orçado</span>
+      <span class="leg-item"><span class="leg-sq" style="background:#D85A30;"></span>Realizado</span>
+    </div>
+    <div style="position:relative;width:100%;height:220px;"><canvas id="chart-receita"></canvas></div>
+  </div>
+</div>
+
+<!-- Saving % chart -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <div class="sec-label">% saving vs % queda de receita — critério de habilitação</div>
+  <div class="legend-row">
+    <span class="leg-item"><span class="leg-sq" style="background:#1D9E75;"></span>% Saving (realizado)</span>
+    <span class="leg-item"><span class="leg-sq" style="background:#C0DD97;"></span>% Saving (orçado)</span>
+    <span class="leg-item"><span class="leg-sq" style="background:#F09595;"></span>|Δ% Receita|</span>
+  </div>
+  <div style="position:relative;width:100%;height:220px;"><canvas id="chart-saving"></canvas></div>
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+    <span class="badge b-ok">Jan: habilitado</span>
+    <span class="badge b-ok">Fev: habilitado</span>
+    <span class="badge b-warn">Mar–Dez: projeção orçada</span>
+  </div>
+</div>
+
+<!-- Acumulado chart -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <div class="sec-label">Evolução acumulada anual</div>
+  <div style="position:relative;width:100%;height:200px;"><canvas id="chart-acum"></canvas></div>
+  <div class="legend-row" style="margin-top:12px;margin-bottom:0;">
+    <span class="leg-item"><span class="leg-sq" style="background:#185FA5;"></span>Acumulado orçado</span>
+    <span class="leg-item"><span class="leg-sq" style="background:#1D9E75;"></span>Acumulado realizado</span>
+    <span style="margin-left:auto;font-size:13px;color:var(--text-sec);">Saldo anual projetado: <strong style="color:var(--green);">R$ 1.104.769,00</strong></span>
+  </div>
+</div>
+
+<!-- Saving detail per month -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <div class="sec-label">Programa de saving — detalhe mensal</div>
+  
+    <div class="saving-row">
+      <div class="saving-month-label">Jan</div>
+      <div class="saving-body">
+        <div class="saving-kpis">
+          <div class="sk"><div class="sk-label">Orçado</div><div class="sk-val">R$ 117.345,00</div></div>
+          <div class="sk"><div class="sk-label">Realizado</div><div class="sk-val">R$ 104.060,86</div></div>
+          <div class="sk"><div class="sk-label">% Saving</div><div class="sk-val pos">11.3%</div></div>
+          <div class="sk"><div class="sk-label">Δ Receita</div><div class="sk-val neg">1.1%</div></div>
+        </div>
+        <div class="saving-bars">
+          <div class="bar-row">
+            <span class="bar-label">% Saving</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:11.3%;background:#1D9E75;"></div></div>
+            <span class="bar-val pos">11.3%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Δ Receita</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:1.1%;background:#E24B4A;"></div></div>
+            <span class="bar-val neg">1.1%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">% Ideal exec.</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:8.3%;background:#185FA5;"></div></div>
+            <span class="bar-val" style="color:var(--blue);">8.3%</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;"><span class="badge b-ok">Habilitado ✓</span>
+          <span style="font-size:12px;color:var(--text-sec);margin-left:8px;">
+            Saving (11.3%) > |Δ Receita| (1.1%)
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="saving-row">
+      <div class="saving-month-label">Fev</div>
+      <div class="saving-body">
+        <div class="saving-kpis">
+          <div class="sk"><div class="sk-label">Orçado</div><div class="sk-val">R$ 117.295,00</div></div>
+          <div class="sk"><div class="sk-label">Realizado</div><div class="sk-val">R$ 94.851,34</div></div>
+          <div class="sk"><div class="sk-label">% Saving</div><div class="sk-val pos">19.1%</div></div>
+          <div class="sk"><div class="sk-label">Δ Receita</div><div class="sk-val neg">4.2%</div></div>
+        </div>
+        <div class="saving-bars">
+          <div class="bar-row">
+            <span class="bar-label">% Saving</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:19.1%;background:#1D9E75;"></div></div>
+            <span class="bar-val pos">19.1%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Δ Receita</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:4.2%;background:#E24B4A;"></div></div>
+            <span class="bar-val neg">4.2%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">% Ideal exec.</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:16.7%;background:#185FA5;"></div></div>
+            <span class="bar-val" style="color:var(--blue);">16.7%</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;"><span class="badge b-ok">Habilitado ✓</span>
+          <span style="font-size:12px;color:var(--text-sec);margin-left:8px;">
+            Saving (19.1%) > |Δ Receita| (4.2%)
+          </span>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- % ideal vs saving acumulado -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <div class="sec-label">% ideal de execução vs % saving acumulado</div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;">
+    <div>
+      <div class="bar-row" style="margin-bottom:8px;">
+        <span class="bar-label">Jan — % ideal</span>
+        <div class="bar-bg"><div class="bar-fill" style="width:8.3%;background:#185FA5;"></div></div>
+        <span class="bar-val" style="color:var(--blue);">8.3%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Jan — % saving</span>
+        <div class="bar-bg"><div class="bar-fill" style="width:11.3%;background:#1D9E75;"></div></div>
+        <span class="bar-val pos">11.3%</span>
+      </div>
+    </div>
+    <div>
+      <div class="bar-row" style="margin-bottom:8px;">
+        <span class="bar-label">Fev — % ideal</span>
+        <div class="bar-bg"><div class="bar-fill" style="width:16.7%;background:#185FA5;"></div></div>
+        <span class="bar-val" style="color:var(--blue);">16.7%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Fev — % saving</span>
+        <div class="bar-bg"><div class="bar-fill" style="width:15.2%;background:#1D9E75;"></div></div>
+        <span class="bar-val pos">15.2%</span>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;padding:10px 14px;background:var(--bg2);border-radius:var(--r-md);font-size:13px;color:var(--text-sec);line-height:1.6;">
+    O saving acumulado de <strong style="color:var(--text);">15.2%</strong> está acima do % ideal de execução proporcional ao período (<strong style="color:var(--text);">16.7%</strong>). A área mantém folga no orçamento.
+  </div>
+</div>
+
+<!-- Category table -->
+<div class="card" style="margin-bottom:1.25rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+    <div class="sec-label" style="margin-bottom:0;">Realizado x Orçado por categoria</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button onclick="filterCat('all')" id="btn-all" class="filter-btn active-btn">Jan + Fev</button>
+      <button onclick="filterCat(1)" id="btn-1" class="filter-btn">Janeiro</button>
+      <button onclick="filterCat(2)" id="btn-2" class="filter-btn">Fevereiro</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="tbl-cat">
+      <colgroup>
+        <col style="width:30%;"><col style="width:13%;"><col style="width:13%;">
+        <col style="width:13%;"><col style="width:13%;"><col style="width:9%;"><col style="width:9%;">
+      </colgroup>
+      <thead>
+        <tr id="thead-row">
+          <th style="text-align:left;">Subcategoria</th>
+          <th>Real Jan</th><th>Orc Jan</th>
+          <th>Real Fev</th><th>Orc Fev</th>
+          <th>Dif. Total</th><th>% Exec.</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-cat"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-sec);">
+    <span>Realizado: <strong style="color:var(--text);">R$ 198.912,20</strong></span>
+    <span>Orçado: <strong style="color:var(--text);">R$ 234.640,00</strong></span>
+    <span>Diferença: <strong id="grand-dif" style="color:var(--green);">R$ 35.727,80</strong></span>
+    <span>% Exec. geral: <strong id="grand-exec">84.8%</strong></span>
+  </div>
+</div>
+
+<div class="footer">
+  <span>Diretoria Executiva · Refuturiza · Orçamento 2026</span>
+  <span>Dados realizados: Jan–Fev · Mar–Dez orçados</span>
+</div>
+</div>
+
+<script>
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const tc = isDark ? '#9a9994' : '#6b6b67';
+const gc = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+const fmtK = v => v == null ? null : (v>=1000000 ? 'R$ '+(v/1000000).toFixed(1)+'M' : 'R$ '+(v/1000).toFixed(0)+'k');
+const fmtBRL = v => v==null?'—':'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+const baseOpts = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{titleFont:{size:12},bodyFont:{size:12},padding:10}},
+  scales:{
+    x:{ticks:{color:tc,font:{size:11},autoSkip:false,maxRotation:0},grid:{display:false},border:{display:false}},
+    y:{ticks:{color:tc,font:{size:11}},grid:{color:gc},border:{display:false}}
+  }
+};
+
+const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const orcado = [117345.0,117295.0,86655.0,86655.0,86655.0,86655.0,86655.0,86655.0,87549.75,87549.75,87549.75,87549.75];
+const totalReal = [104060.863,94851.337,null,null,null,null,null,null,null,null,null,null];
+const recOrc  = [1957462.512,2040332.6224,2096835.2464,2250379.0304,2422045.212,2559878.0876,2744828.1733,2922524.6868,3059975.0326,3188569.9144,3314299.8989,3398591.1251];
+const recReal = [1979391.81,1955318.73,null,null,null,null,null,null,null,null,null,null];
+const savingReal = [0.1132,0.1913,null,null,null,null,null,null,null,null,null,null];
+const savingOrc  = [null,null,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0];
+const recDelta = [0.0112,0.0417,null,null,null,null,null,null,null,null,null,null];
+const acumOrc  = [117345.0,234640.0,321295.0,407950.0,494605.0,581260.0,667915.0,754570.0,842119.75,929669.5,1017219.25,1104769.0];
+const acumReal = [104060.863,198912.2,null,null,null,null,null,null,null,null,null,null];
+
+new Chart(document.getElementById('chart-despesas'),{
+  type:'bar',
+  data:{labels:months,datasets:[
+    {label:'Orçado',    data:orcado,    backgroundColor:'#B5D4F4',borderRadius:4},
+    {label:'Realizado', data:totalReal, backgroundColor:'#1D9E75',borderRadius:4}
+  ]},
+  options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>fmtK(v)}}}}
+});
+
+new Chart(document.getElementById('chart-receita'),{
+  type:'line',
+  data:{labels:months,datasets:[
+    {label:'Orçado',    data:recOrc,  borderColor:'#185FA5',backgroundColor:'transparent',tension:0.3,pointRadius:3,borderWidth:2},
+    {label:'Realizado', data:recReal, borderColor:'#D85A30',backgroundColor:'transparent',tension:0.3,pointRadius:3,borderWidth:2}
+  ]},
+  options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>fmtK(v)}}}}
+});
+
+new Chart(document.getElementById('chart-saving'),{
+  type:'bar',
+  data:{labels:months,datasets:[
+    {label:'% Saving (real)',  data:savingReal, backgroundColor:'#1D9E75',borderRadius:4,order:2},
+    {label:'% Saving (orc)',   data:savingOrc,  backgroundColor:'#C0DD97',borderRadius:4,order:2},
+    {label:'|Δ% Receita|',    data:recDelta,   backgroundColor:'#F09595',borderRadius:4,order:2}
+  ]},
+  options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>(v*100).toFixed(0)+'%'}}}}
+});
+
+new Chart(document.getElementById('chart-acum'),{
+  type:'line',
+  data:{labels:months,datasets:[
+    {label:'Acumulado orçado',    data:acumOrc,  borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,0.08)',fill:true,tension:0.3,pointRadius:3,borderWidth:2},
+    {label:'Acumulado realizado', data:acumReal, borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',fill:true,tension:0.3,pointRadius:3,borderWidth:2}
+  ]},
+  options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>fmtK(v)}}}}
+});
+
+// Category table — Realizado x Orçado
+const catData = [{"cat": "2002.02 - GASTOS PREDIAIS", "sub": "2002.02.03 - Alugueis e Condomínios", "real_jan": 33391.47, "real_fev": 33852.23, "orc_jan": 35000.0, "orc_fev": 35000.0, "total_real": 67243.7, "total_orc": 70000.0}, {"cat": "2001.01 - FOLHA DE PAGAMENTO", "sub": "2001.01.03 - Pró Labore", "real_jan": 17895.0, "real_fev": 32013.0, "orc_jan": 13842.0, "orc_fev": 13842.0, "total_real": 49908.0, "total_orc": 27684.0}, {"cat": "3000.03 - INVESTIMENTOS SOCIETÁRIO", "sub": "3000.03.01 - Cotas e Ações", "real_jan": 30639.72, "real_fev": 14866.02, "orc_jan": 30640.0, "orc_fev": 30640.0, "total_real": 45505.74, "total_orc": 61280.0}, {"cat": "2002.03 - PRESTADORES DE SERVIÇOS", "sub": "2002.03.01 - Despesas Jurídicas", "real_jan": 12380.12, "real_fev": 12305.94, "orc_jan": 11000.0, "orc_fev": 11000.0, "total_real": 24686.06, "total_orc": 22000.0}, {"cat": "2002.01 - DESPESAS ADMINISTRATIVAS", "sub": "2002.01.02 - Despesas com Viagem", "real_jan": 8405.58, "real_fev": 0, "orc_jan": 3000.0, "orc_fev": 3000.0, "total_real": 8405.58, "total_orc": 6000.0}, {"cat": "2001.02 - BENEFÍCIOS", "sub": "2001.02.01 - Vale Refeição", "real_jan": 1260.0, "real_fev": 1539.98, "orc_jan": 1440.0, "orc_fev": 1440.0, "total_real": 2799.98, "total_orc": 2880.0}, {"cat": "2000.01 - Custo Direto", "sub": "2000.01.08 - Devoluções de Vendas", "real_jan": 0, "real_fev": 178.87, "orc_jan": 0, "orc_fev": 0, "total_real": 178.87, "total_orc": 0}, {"cat": "2002.08 - DESPESAS BANCÁRIAS", "sub": "2002.08.01 - Despesas Financeiras", "real_jan": 5.97, "real_fev": 95.3, "orc_jan": 0, "orc_fev": 0, "total_real": 101.27, "total_orc": 0}, {"cat": "2000.01 - Custo Direto", "sub": "2000.01.02 - Custos  de Transação", "real_jan": 83.0, "real_fev": 0, "orc_jan": 0, "orc_fev": 0, "total_real": 83.0, "total_orc": 0}, {"cat": "2002.03 - PRESTADORES DE SERVIÇOS", "sub": "2002.03.03 - Consultoria", "real_jan": 0, "real_fev": 0, "orc_jan": 8000.0, "orc_fev": 8000.0, "total_real": 0, "total_orc": 16000.0}, {"cat": "2001.01 - FOLHA DE PAGAMENTO", "sub": "2001.01.01 - Salários CLT", "real_jan": 0, "real_fev": 0, "orc_jan": 4053.0, "orc_fev": 4053.0, "total_real": 0, "total_orc": 8106.0}, {"cat": "2002.04 - DESPESAS DE TECNOLOGIA", "sub": "2002.04.02 - Plataforma/Sistemas", "real_jan": 0, "real_fev": 0, "orc_jan": 3500.0, "orc_fev": 3500.0, "total_real": 0, "total_orc": 7000.0}, {"cat": "3000.01 - IMOBILIZADO", "sub": "3000.01.03 - Reformas", "real_jan": 0, "real_fev": 0, "orc_jan": 2500.0, "orc_fev": 2500.0, "total_real": 0, "total_orc": 5000.0}, {"cat": "2002.02 - GASTOS PREDIAIS", "sub": "2002.02.01 - Serviços de Manutenção", "real_jan": 0, "real_fev": 0, "orc_jan": 1500.0, "orc_fev": 1500.0, "total_real": 0, "total_orc": 3000.0}, {"cat": "3000.01 - IMOBILIZADO", "sub": "3000.01.02 - Móveis e Utensílios", "real_jan": 0, "real_fev": 0, "orc_jan": 1500.0, "orc_fev": 1500.0, "total_real": 0, "total_orc": 3000.0}, {"cat": "3000.01 - IMOBILIZADO", "sub": "3000.01.01 - Máquinas e Equipamentos", "real_jan": 0, "real_fev": 0, "orc_jan": 700.0, "orc_fev": 700.0, "total_real": 0, "total_orc": 1400.0}, {"cat": "2002.01 - DESPESAS ADMINISTRATIVAS", "sub": "2002.01.06 - Locação de Equipamentos", "real_jan": 0, "real_fev": 0, "orc_jan": 300.0, "orc_fev": 300.0, "total_real": 0, "total_orc": 600.0}, {"cat": "2002.01 - DESPESAS ADMINISTRATIVAS", "sub": "2002.01.09 - Conserto Equipamentos", "real_jan": 0, "real_fev": 0, "orc_jan": 120.0, "orc_fev": 120.0, "total_real": 0, "total_orc": 240.0}, {"cat": "2002.01 - DESPESAS ADMINISTRATIVAS", "sub": "2002.01.07 - Reembolso de Deslocamento", "real_jan": 0, "real_fev": 0, "orc_jan": 100.0, "orc_fev": 100.0, "total_real": 0, "total_orc": 200.0}, {"cat": "2002.01 - DESPESAS ADMINISTRATIVAS", "sub": "2002.01.10 - Taxas e Licenças", "real_jan": 0, "real_fev": 0, "orc_jan": 100.0, "orc_fev": 100.0, "total_real": 0, "total_orc": 200.0}, {"cat": "2002.01 - DESPESAS ADMINISTRATIVAS", "sub": "2002.01.05 - Fretes/Entregas", "real_jan": 0, "real_fev": 0, "orc_jan": 50.0, "orc_fev": 0.0, "total_real": 0, "total_orc": 50.0}];
+const grandReal = 198912.2;
+const grandOrc  = 234640.0;
+const grandOrcJan = 117345.0;
+const grandOrcFev = 117295.0;
+
+function fv(v){ return v>0 ? fmtBRL(v) : '<span style="color:var(--text-sec);">—</span>'; }
+function difStyle(dif){
+  if(dif>0) return 'style="color:var(--green);font-weight:600;"';
+  if(dif<0) return 'style="color:var(--red);font-weight:600;"';
+  return '';
+}
+function pctStyle(pct){
+  if(pct===null) return '';
+  if(pct<=1.0) return 'style="color:var(--green);font-weight:600;"';
+  return 'style="color:var(--red);font-weight:600;"';
+}
+
+function filterCat(mes){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-btn'));
+  document.getElementById(mes==='all'?'btn-all':'btn-'+mes).classList.add('active-btn');
+  // Update header
+  const th = document.getElementById('thead-row');
+  if(mes==='all'){
+    th.innerHTML='<th style="text-align:left;">Subcategoria</th><th>Real Jan</th><th>Orc Jan</th><th>Real Fev</th><th>Orc Fev</th><th>Dif. Total</th><th>% Exec.</th>';
+  } else {
+    const mn = mes===1?'Jan':'Fev';
+    th.innerHTML=`<th style="text-align:left;">Subcategoria</th><th>Realizado ${mn}</th><th>Orçado ${mn}</th><th>Diferença</th><th>% Exec.</th>`;
+  }
+  renderCat(mes);
+}
+
+function renderCat(mes){
+  const tbody = document.getElementById('tbody-cat');
+  tbody.innerHTML='';
+  let totRJ=0,totRF=0,totOJ=0,totOF=0;
+
+  catData.forEach(r=>{
+    const rj=r.real_jan, rf=r.real_fev, oj=r.orc_jan, of=r.orc_fev;
+    const realTot=rj+rf, orcTot=oj+of;
+    const dif=orcTot-realTot;
+    const pct=orcTot>0?realTot/orcTot:null;
+
+    if(mes!=='all'){
+      const rv=mes===1?rj:rf, ov=mes===1?oj:of;
+      if(rv===0&&ov===0) return;
+      const d=ov-rv, p=ov>0?rv/ov:null;
+      const pStr=p!==null?(p*100).toFixed(1)+'%':'—';
+      const dStr=d>=0?'+'+fmtBRL(d):fmtBRL(Math.abs(d))*-1;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td title="${r.sub}">${r.sub}</td><td>${fv(rv)}</td><td>${fv(ov)}</td><td ${difStyle(d)}>${d>=0?'+':'-'}${fmtBRL(Math.abs(d))}</td><td ${pctStyle(p)}>${pStr}</td>`;
+      tbody.appendChild(tr);
+      if(mes===1){totRJ+=rv;totOJ+=ov;} else {totRF+=rv;totOF+=of;}
+    } else {
+      if(realTot===0&&orcTot===0) return;
+      const pStr=pct!==null?(pct*100).toFixed(1)+'%':'—';
+      const difStr=(dif>=0?'+':'-')+fmtBRL(Math.abs(dif));
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td title="${r.sub}">${r.sub}</td><td>${fv(rj)}</td><td>${fv(oj)}</td><td>${fv(rf)}</td><td>${fv(of)}</td><td ${difStyle(dif)}>${difStr}</td><td ${pctStyle(pct)}>${pStr}</td>`;
+      tbody.appendChild(tr);
+      totRJ+=rj;totRF+=rf;totOJ+=oj;totOF+=of;
+    }
+  });
+
+  // Totals row
+  const tr=document.createElement('tr');
+  if(mes==='all'){
+    const tDif=((totOJ+totOF)-(totRJ+totRF));
+    const tPct=((totRJ+totRF)/(totOJ+totOF)*100).toFixed(1)+'%';
+    tr.innerHTML=`<td>Total</td><td>${fmtBRL(totRJ)}</td><td>${fmtBRL(totOJ)}</td><td>${fmtBRL(totRF)}</td><td>${fmtBRL(totOF)}</td><td ${difStyle(tDif)}>${(tDif>=0?'+':'-')}${fmtBRL(Math.abs(tDif))}</td><td>${tPct}</td>`;
+  } else {
+    const rv=mes===1?totRJ:totRF, ov=mes===1?totOJ:totOF;
+    const d=ov-rv, p=(rv/ov*100).toFixed(1)+'%';
+    tr.innerHTML=`<td colspan="1">Total</td><td>${fmtBRL(rv)}</td><td>${fmtBRL(ov)}</td><td ${difStyle(d)}>${(d>=0?'+':'-')}${fmtBRL(Math.abs(d))}</td><td>${p}</td>`;
+  }
+  tbody.appendChild(tr);
+}
+renderCat('all');
+</script></html>
